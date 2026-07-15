@@ -6,7 +6,8 @@
   "type": "module",
   "scripts": {
     "dev": "nodemon src/index.js",
-    "email:dev": "email dev"
+    "email:dev": "email dev",
+    "start": "node src/index.js"
   },
   "author": "Prince Kumar Rai",
   "license": "ISC",
