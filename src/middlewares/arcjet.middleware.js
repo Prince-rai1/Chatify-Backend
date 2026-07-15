@@ -1,4 +1,4 @@
-import aj from "../utils/arcjet";
+import aj from "../utils/arcjet.js";
 import { isSpoofedBot } from "@arcjet/inspect";
 
 const arcjetMiddleware = async (req, res, next) => {
