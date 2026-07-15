@@ -32,7 +32,7 @@ Hi ${username} 👋
 </h2>
 
 <p style="color:#4b5563;font-size:16px;line-height:1.7;">
-Welcome to <strong>Chat App</strong>.
+Welcome to <strong>Chatify</strong>.
 ${description}
 </p>
 
