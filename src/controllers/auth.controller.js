@@ -7,7 +7,7 @@ import { signInSchema } from "../schemas/AuthSchema/SignInSchema.js";
 import { verifyCodeSchema } from "../schemas/AuthSchema/VerifyCodeSchema.js";
 import { sendEmail } from "../email/SendEmail.js";
 import { forgetPasswordSchema } from "../schemas/AuthSchema/ForgetPasswordSchema.js";
-import { verifyOtpSchema } from "../schemas/AuthSchema/verifyOtpSchema.js";
+import { verifyOtpSchema } from "../schemas/AuthSchema/VerifyOtpSchema.js";
 import { resetPasswordSchema } from "../schemas/AuthSchema/ResetPasswordSchema.js";
 
 export const SignUp = asyncHandler(async (req, res) => {
@@ -368,7 +368,7 @@ export const ResetPassword = asyncHandler(async (req, res) => {
   try {
     const { resetToken, password } = result.data;
 
-    const decoded = jwt.verify(resetToken, process.env.RESET_PASSWORD_SECRET);
+    const decoded = jwt.verify(resetToken, process.env.RESET_PASSWORD_TOKEN_SECRET);
 
     const user = await User.findById(decoded._id);
 

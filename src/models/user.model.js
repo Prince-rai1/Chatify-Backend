@@ -93,7 +93,7 @@ userSchema.methods.resetToken = function () {
       _id: this._id,
       hashPassword: this.password,
     },
-    process.env.RESET_PASSWORD_SECRET,
+    process.env.RESET_PASSWORD_TOKEN_SECRET,
     {
       expiresIn: "5m",
     },

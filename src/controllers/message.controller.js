@@ -97,29 +97,104 @@ export const sendMessage = asyncHandler(async (req, res) => {
 export const getChatPartners = asyncHandler(async (req, res) => {
   const currentUserId = req.user._id;
 
-  const messages = await Message.find({
-    $or: [{ sender: currentUserId }, { receiver: currentUserId }],
-  });
+  const chats = await Message.aggregate([
+    {
+      $match: {
+        $or: [
+          { sender: currentUserId },
+          { receiver: currentUserId },
+        ],
+      },
+    },
 
-  const partnerIds = [
-    ...new Set(
-      messages.map((msg) =>
-        msg.sender.toString() === currentUserId.toString()
-          ? msg.receiver.toString()
-          : msg.sender.toString(),
-      ),
-    ),
-  ];
+    {
+      $sort: {
+        createdAt: -1,
+      },
+    },
 
-  const users = await User.find({
-    _id: { $in: partnerIds },
-  }).select(
-    "-password -refreshToken -otp -verifyCode -otpExpiry -verifyCodeExpiry",
-  );
+    {
+      $addFields: {
+        partnerId: {
+          $cond: [
+            { $eq: ["$sender", currentUserId] },
+            "$receiver",
+            "$sender",
+          ],
+        },
+      },
+    },
+
+    {
+      $group: {
+        _id: "$partnerId",
+
+        lastMessage: {
+          $first: "$message",
+        },
+
+        lastMessageTime: {
+          $first: "$createdAt",
+        },
+
+        lastImage: {
+          $first: "$image",
+        },
+
+        unreadCount: {
+          $sum: {
+            $cond: [
+              {
+                $and: [
+                  { $eq: ["$receiver", currentUserId] },
+                  { $eq: ["$isSeen", false] },
+                ],
+              },
+              1,
+              0,
+            ],
+          },
+        },
+      },
+    },
+
+    {
+      $lookup: {
+        from: "users",
+        localField: "_id",
+        foreignField: "_id",
+        as: "user",
+      },
+    },
+
+    {
+      $unwind: "$user",
+    },
+
+    {
+      $project: {
+        _id: "$user._id",
+        fullname: "$user.fullname",
+        username: "$user.username",
+        profilePicture: "$user.profilePicture",
+
+        lastMessage: 1,
+        lastMessageTime: 1,
+        lastImage: 1,
+        unreadCount: 1,
+      },
+    },
+
+    {
+      $sort: {
+        lastMessageTime: -1,
+      },
+    },
+  ]);
 
   return res.status(200).json({
     success: true,
-    message: "Chat partners fetched successfully.",
-    data: users,
+    message: "Chats fetched successfully.",
+    data: chats,
   });
 });

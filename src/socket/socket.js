@@ -56,9 +56,7 @@ const initializeSocket = (server) => {
         );
 
         const senderSocketId = userSocketMap.get(chatUserId?.toString());
-
-        console.log(socket.userId)
-
+        
         if (senderSocketId) {
           io.to(senderSocketId).emit("messages-seen", {
             seenBy: socket.userId,

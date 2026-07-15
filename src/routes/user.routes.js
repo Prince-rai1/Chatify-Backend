@@ -4,6 +4,7 @@ import {
   getAllUsers,
   getCurrentUser,
   UpdateFullname,
+  UpdatePassword,
   UpdateProfilePic,
   UpdateUsername,
 } from "../controllers/user.controller.js";
@@ -18,6 +19,7 @@ router.route("/update-username").patch(auth, UpdateUsername);
 router
   .route("/update-profilepic")
   .patch(auth, upload.single("profilePic"), UpdateProfilePic);
+router.route("/update-password").patch(auth, UpdatePassword);
 router.route("/delete-account").delete(auth, DeleteAccount);
 router.route("/contacts").get(auth, getAllUsers);
 

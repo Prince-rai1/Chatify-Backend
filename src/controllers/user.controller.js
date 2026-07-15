@@ -6,6 +6,8 @@ import {
 } from "../utils/cloudinary.js";
 import { fullNameSchema } from "../schemas/UserSchema/FullNameSchema.js";
 import { userNameSchema } from "../schemas/UserSchema/UserNameSchema.js";
+import { updatePasswordSchema } from "../schemas/UserSchema/UpdatePasswordSchema.js";
+import bcrypt from "bcrypt";
 
 export const getCurrentUser = asyncHandler(async (req, res) => {
   const userId = req.user?._id;
@@ -57,7 +59,6 @@ export const UpdateFullname = asyncHandler(async (req, res) => {
   if (!validation.success) {
     return res.status(400).json({
       success: false,
-
       message: validation.error.issues[0].message,
     });
   }
@@ -84,7 +85,7 @@ export const UpdateFullname = asyncHandler(async (req, res) => {
   return res.status(200).json({
     success: true,
     message: "Your name update successfully",
-    data: updatedUser,
+    data: updatedUser.fullname,
   });
 });
 
@@ -119,7 +120,7 @@ export const UpdateUsername = asyncHandler(async (req, res) => {
   return res.status(200).json({
     success: true,
     message: "Username updated successfully!",
-    data: updatedUser,
+    data: updatedUser.username,
   });
 });
 
@@ -147,9 +148,9 @@ export const UpdateProfilePic = asyncHandler(async (req, res) => {
   const oldProfilePicId = user?.profilePicture?.public_id;
 
   const uploadedImage = await uploadOnCloudinary(
-        localFilePath,
-        req.file.originalname
-    );
+    localFilePath,
+    req.file.originalname,
+  );
 
   if (!uploadedImage.secure_url) {
     return res
@@ -215,4 +216,47 @@ export const DeleteAccount = asyncHandler(async (req, res) => {
       success: true,
       message: "Account deleted successfully",
     });
+});
+
+export const UpdatePassword = asyncHandler(async (req, res) => {
+  try {
+    const validation = updatePasswordSchema.safeParse(req.body);
+
+    if (!validation.success) {
+      return res.status(400).json({
+        success: false,
+        message: validation.error.issues[0].message,
+      });
+    }
+
+    const { oldPassword, newPassword } = validation.data;
+
+    const user = await User.findById(req.user?._id);
+
+    const isPasswordCorrect = await bcrypt.compare(oldPassword, user.password);
+
+    if (!isPasswordCorrect) {
+      return res.status(401).json({
+        success: false,
+        message: "Incorrect Password",
+      });
+    }
+
+    const hashPassword = await bcrypt.hash(newPassword, 12);
+
+    user.password = hashPassword;
+
+    await user.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Password updated successfully",
+    });
+  } catch (error) {
+    console.log(error)
+    return res.status(500).json({
+      success: false,
+      message: "error while updating the password",
+    });
+  }
 });
