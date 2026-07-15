@@ -139,6 +139,7 @@ export const SignIn = asyncHandler(async (req, res) => {
   const options = {
     httpOnly: true,
     secure: true,
+    sameSite: "none"
   };
 
   return res
@@ -451,7 +452,7 @@ export const RefreshAccessToken = asyncHandler(async (req, res) => {
     const options = {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      sameSite: "none",
     };
 
     return res
