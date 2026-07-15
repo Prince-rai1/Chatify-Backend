@@ -9,7 +9,7 @@ import errorHandler from './middlewares/error.middlware.js'
 const app = express();
 
 app.use(cors({
-    origin: process.env.CHATIFY_CORS_URI, 
+    origin: process.env.CLIENT_URI, 
     credentials: true, 
 }));
 
