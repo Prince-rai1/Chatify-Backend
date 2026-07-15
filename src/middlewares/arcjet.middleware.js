@@ -1,7 +1,7 @@
 import aj from "../utils/arcjet";
 import { isSpoofedBot } from "@arcjet/inspect";
 
-export const arcjetMiddleware = async (req, res, next) => {
+const arcjetMiddleware = async (req, res, next) => {
  try {
      const decision = await aj.protect(req);
    
@@ -39,3 +39,5 @@ export const arcjetMiddleware = async (req, res, next) => {
     next(error)
  }
 };
+
+export default arcjetMiddleware
