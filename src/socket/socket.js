@@ -9,7 +9,7 @@ const userSocketMap = new Map();
 const initializeSocket = (server) => {
   io = new Server(server, {
     cors: {
-      origin:process.env.CLIENT_URI,
+      origin: process.env.CLIENT_URI,
       credentials: true,
     },
   });
@@ -30,16 +30,15 @@ const initializeSocket = (server) => {
     });
 
     socket.on("disconnect", () => {
-      if (socket.userId) {
+      if (socket.userId && userSocketMap.get(socket.userId) === socket.id) {
         userSocketMap.delete(socket.userId);
+        emitOnlineUsers();
       }
-      emitOnlineUsers();
-
       console.log(`Disconnected: ${socket.id}`);
     });
 
     socket.on("mark-chat-seen", async ({ chatUserId }) => {
-       if (!chatUserId) return;
+      if (!chatUserId) return;
 
       try {
         await Message.updateMany(
@@ -56,7 +55,7 @@ const initializeSocket = (server) => {
         );
 
         const senderSocketId = userSocketMap.get(chatUserId?.toString());
-        
+
         if (senderSocketId) {
           io.to(senderSocketId).emit("messages-seen", {
             seenBy: socket.userId,
