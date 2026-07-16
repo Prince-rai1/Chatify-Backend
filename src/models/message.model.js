@@ -18,13 +18,15 @@ const messageSchema = new mongoose.Schema(
     message: {
       type: String,
       trim: true,
-      maxLength : 2000
+      maxLength: 2000,
     },
 
-    image: {
-    url: String,
-    public_id: String,
-    },
+    images: [
+      {
+        url: String,
+        public_id: String,
+      },
+    ],
 
     isSeen: {
       type: Boolean,
@@ -33,9 +35,9 @@ const messageSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 const Message = mongoose.model("Message", messageSchema);
 
-export default Message
+export default Message;

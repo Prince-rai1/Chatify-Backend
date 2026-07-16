@@ -7,7 +7,7 @@ const router = Router();
 
 router.route("/chats").get(auth, getChatPartners)
 router.route("/:id").get(auth, getMessages);
-router.route("/send/:id").post(auth, upload.single("image"), sendMessage)
+router.route("/send/:id").post(auth, upload.array("images", 6), sendMessage)
 
 
 export default router;

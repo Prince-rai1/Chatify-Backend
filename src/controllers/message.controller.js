@@ -36,10 +36,8 @@ export const sendMessage = asyncHandler(async (req, res) => {
   }
 
   const { message } = result.data;
+  const imageFiles = req.files || [];   
 
-  const imageBuffer = req.file?.buffer;
-
-  // Receiver exists or not
   const receiver = await User.findById(receiverId);
 
   if (!receiver) {
@@ -49,36 +47,30 @@ export const sendMessage = asyncHandler(async (req, res) => {
     });
   }
 
-  // Message ya Image me se ek hona chahiye
-  if (!message && !imageBuffer) {
+  if (!message && imageFiles.length === 0) {
     return res.status(400).json({
       success: false,
-      message: "Please send a message or an image.",
+      message: "Please send a message or at least one image.",
     });
   }
 
-  let imageUrl = "";
-  let public_id = "";
+  // Sab images parallel mein upload karo (ek ek karke nahi, fast rahega)
+  const uploadResults = await Promise.all(
+    imageFiles.map((file) => uploadOnCloudinary(file.buffer)),
+  );
 
-  if (imageBuffer) {
-    const uploadedImage = await uploadOnCloudinary(
-      imageBuffer,
-      req.file.originalname,
-    );
-
-    imageUrl = uploadedImage?.secure_url || "";
-
-    public_id = uploadedImage?.public_id || "";
-  }
+  const images = uploadResults
+    .filter(Boolean)
+    .map((uploaded) => ({
+      url: uploaded.secure_url,
+      public_id: uploaded.public_id,
+    }));
 
   const newMessage = await Message.create({
     sender: senderId,
     receiver: receiverId,
     message: message || "",
-    image: {
-      url: imageUrl,
-      public_id: public_id,
-    },
+    images,
   });
 
   const receiverSocketId = userSocketMap.get(receiver._id.toString());
@@ -137,8 +129,8 @@ export const getChatPartners = asyncHandler(async (req, res) => {
           $first: "$createdAt",
         },
 
-        lastImage: {
-          $first: "$image",
+        lastImages: {
+          $first: "$images",
         },
 
         unreadCount: {
@@ -180,7 +172,7 @@ export const getChatPartners = asyncHandler(async (req, res) => {
 
         lastMessage: 1,
         lastMessageTime: 1,
-        lastImage: 1,
+        lastImages: 1,
         unreadCount: 1,
       },
     },
