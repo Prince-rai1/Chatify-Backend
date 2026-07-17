@@ -1,6 +1,5 @@
 import { Server } from "socket.io";
 import Message from "../models/message.model.js";
-import { asyncHandler } from "../utils/asyncHandler.js";
 
 let io;
 
@@ -14,11 +13,7 @@ const initializeSocket = (server) => {
     },
   });
 
-  console.log("Socket.IO initialized");
-
   io.on("connection", (socket) => {
-    console.log(`New Connection: ${socket.id}`);
-
     socket.on("user-connected", (userId) => {
       socket.userId = userId;
 
