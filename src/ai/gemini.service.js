@@ -21,17 +21,31 @@ export const generateResponseStream = async ({
   systemPrompt,
   history = [],
   message,
+  fileData,
+  fileType,
 }) => {
+  const parts = [];
+
+  if (fileData && fileType) {
+    const base64Data = fileData.replace(/^data:([A-Za-z-+/]+);base64,/, '');
+    parts.push({
+      inlineData: {
+        data: base64Data,
+        mimeType: fileType,
+      },
+    });
+  }
+
+  if (message) {
+    parts.push({ text: message });
+  }
+
   const contents = [
     ...formatHistory(history),
 
     {
       role: "user",
-      parts: [
-        {
-          text: message,
-        },
-      ],
+      parts,
     },
   ];
 

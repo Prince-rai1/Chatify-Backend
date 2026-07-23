@@ -1,9 +1,9 @@
 import { AICharacter } from "../models/aiCharacter.model.js";
 import { AIMessage } from "../models/aiMessage.model.js";
-import {asyncHandler} from "../utils/asyncHandler.js";
+import { asyncHandler } from "../utils/asyncHandler.js";
 import { generateResponseStream } from "../ai/gemini.service.js";
 import { io, userSocketMap } from "../socket/socket.js";
-
+import { uploadOnCloudinary } from "../utils/cloudinary.js";
 export const getAICharacters = asyncHandler(async (req, res) => {
   const characters = await AICharacter.find({
     isActive: true,
@@ -47,12 +47,12 @@ export const getAIChatHistory = asyncHandler(async (req, res) => {
 const HISTORY_LIMIT = 40;
 
 export const chatWithAI = asyncHandler(async (req, res) => {
-  const { aiCharacterId, message } = req.body;
+  const { aiCharacterId, message, fileData, fileName, fileType } = req.body;
 
-  if (!aiCharacterId || !message?.trim()) {
+  if (!aiCharacterId || (!message?.trim() && !fileData)) {
     return res.status(400).json({
       success: false,
-      message: "Character ID and message are required.",
+      message: "Character ID and message/file are required.",
     });
   }
 
@@ -75,19 +75,41 @@ export const chatWithAI = asyncHandler(async (req, res) => {
 
   // Fir unko seedha (reverse) kar do taaki chat flow sahi rahe
   const history = rawHistory.reverse();
- console.log(history)
+  
+  let userMessageContent = message || "";
+  let finalFileUrl = null;
+
+  if (fileData) {
+    if (fileType && (fileType.startsWith("image/") || fileType === "application/pdf")) {
+      // It's a media file (Base64)
+      const base64Data = fileData.replace(/^data:([A-Za-z-+/]+);base64,/, '');
+      const buffer = Buffer.from(base64Data, 'base64');
+      const uploadResult = await uploadOnCloudinary(buffer);
+      if (uploadResult) {
+        finalFileUrl = uploadResult.secure_url;
+      }
+    } else {
+      // It's a text/code file. Append to message text for Gemini and DB
+      userMessageContent += `\n\n--- Attached File: ${fileName} ---\n${fileData}`;
+    }
+  }
 
   await AIMessage.create({
     user: req.user._id,
     character: aiCharacterId,
     role: "user",
-    content: message,
+    content: userMessageContent,
+    fileUrl: finalFileUrl,
+    fileName: fileName || null,
+    fileType: fileType || null,
   });
 
   const stream = await generateResponseStream({
     systemPrompt: aiCharacter.systemPrompt,
     history,
-    message,
+    message: userMessageContent,
+    fileData: (fileType && (fileType.startsWith("image/") || fileType === "application/pdf")) ? fileData : null,
+    fileType,
   });
 
   let fullResponse = "";

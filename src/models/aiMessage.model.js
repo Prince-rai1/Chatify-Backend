@@ -27,6 +27,21 @@ const aiMessageSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    
+    fileUrl: {
+      type: String,
+      default: null,
+    },
+
+    fileName: {
+      type: String,
+      default: null,
+    },
+
+    fileType: {
+      type: String,
+      default: null,
+    },
   },
   {
     timestamps: true,
