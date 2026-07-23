@@ -76,7 +76,8 @@ export const chatWithAI = asyncHandler(async (req, res) => {
   // Fir unko seedha (reverse) kar do taaki chat flow sahi rahe
   const history = rawHistory.reverse();
   
-  let userMessageContent = message || "";
+  let dbMessageContent = message || "";
+  let geminiMessageContent = message || "";
   let finalFileUrl = null;
 
   if (fileData) {
@@ -89,8 +90,8 @@ export const chatWithAI = asyncHandler(async (req, res) => {
         finalFileUrl = uploadResult.secure_url;
       }
     } else {
-      // It's a text/code file. Append to message text for Gemini and DB
-      userMessageContent += `\n\n--- Attached File: ${fileName} ---\n${fileData}`;
+      // It's a text/code file. Append to message text for Gemini ONLY (not DB)
+      geminiMessageContent += `\n\n--- Attached File: ${fileName} ---\n${fileData}`;
     }
   }
 
@@ -98,7 +99,7 @@ export const chatWithAI = asyncHandler(async (req, res) => {
     user: req.user._id,
     character: aiCharacterId,
     role: "user",
-    content: userMessageContent,
+    content: dbMessageContent,
     fileUrl: finalFileUrl,
     fileName: fileName || null,
     fileType: fileType || null,
@@ -107,7 +108,7 @@ export const chatWithAI = asyncHandler(async (req, res) => {
   const stream = await generateResponseStream({
     systemPrompt: aiCharacter.systemPrompt,
     history,
-    message: userMessageContent,
+    message: geminiMessageContent,
     fileData: (fileType && (fileType.startsWith("image/") || fileType === "application/pdf")) ? fileData : null,
     fileType,
   });
