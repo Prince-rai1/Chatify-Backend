@@ -54,7 +54,6 @@ export const sendMessage = asyncHandler(async (req, res) => {
     });
   }
 
-  // Sab images parallel mein upload karo (ek ek karke nahi, fast rahega)
   const uploadResults = await Promise.all(
     imageFiles.map((file) => uploadOnCloudinary(file.buffer)),
   );

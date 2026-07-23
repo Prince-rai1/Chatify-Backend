@@ -3,10 +3,12 @@ import "dotenv/config";
 import { app } from "./app.js";
 import http from "http";
 import { initializeSocket } from "./socket/socket.js";
+import { initializeAiSocket } from "./socket/ai.socket.js"
 
 const server = http.createServer(app)
 
 initializeSocket(server)
+initializeAiSocket(server)
 
 connectDB()
 .then(() =>(

@@ -3,6 +3,7 @@ import cookieParser from 'cookie-parser'
 import authRouter from './routes/auth.routes.js'
 import userRouter from './routes/user.routes.js'
 import messageRouter from './routes/message.routes.js'
+import aiRouter from './routes/ai.routes.js'
 import cors from "cors";
 import errorHandler from './middlewares/error.middlware.js'
 
@@ -23,9 +24,9 @@ app.use("/api/user", userRouter)
 
 app.use("/api/messages", messageRouter)
 
-app.use(errorHandler)
+app.use("/api/ai", aiRouter)
 
-// app.use(cors());
+app.use(errorHandler)
 
 
 export {app}
