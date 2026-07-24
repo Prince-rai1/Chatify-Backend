@@ -24,7 +24,6 @@ const aiMessageSchema = new mongoose.Schema(
 
     content: {
       type: String,
-      required: true,
       trim: true,
     },
     
