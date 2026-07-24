@@ -3,8 +3,7 @@ import { AICharacter } from '../models/aiCharacter.model.js';
 
 export const initializeAiSocket = (server) => {
     const wss = new WebSocketServer({ noServer: true });
-
-    // 1. Upgrade HTTP request to WebSocket for /api/ai-call
+    
     server.on('upgrade', (request, socket, head) => {
         const pathname = new URL(request.url, `http://${request.headers.host}`).pathname;
 

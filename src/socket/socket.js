@@ -1,6 +1,5 @@
 import { Server } from "socket.io";
 import { registerChatEvents } from "./chat.socket.js";
-// import { registerAICallEvents } from "./aiCall.socket.js";
 
 let io;
 
@@ -27,8 +26,6 @@ const initializeSocket = (server) => {
         });
 
         registerChatEvents(socket);
-
-        // registerAICallEvents(socket);
 
         socket.on("disconnect",()=>{
 

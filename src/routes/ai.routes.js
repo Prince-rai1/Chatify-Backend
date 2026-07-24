@@ -1,10 +1,10 @@
 import { Router } from "express";
 import auth from "../middlewares/auth.middleware.js";
-import { 
-  chatWithAI, 
-  clearAIChatHistory, 
-  getAICharacters, 
-  getAIChatHistory 
+import {
+  chatWithAI,
+  clearAIChatHistory,
+  getAICharacters,
+  getAIChatHistory
 } from "../controllers/ai.controller.js";
 
 const router = Router();

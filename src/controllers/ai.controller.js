@@ -4,6 +4,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { generateResponseStream } from "../ai/gemini.service.js";
 import { io, userSocketMap } from "../socket/socket.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
+
 export const getAICharacters = asyncHandler(async (req, res) => {
   const characters = await AICharacter.find({
     isActive: true,
@@ -41,12 +42,10 @@ export const getAIChatHistory = asyncHandler(async (req, res) => {
 });
 
 
-
-
-
 const HISTORY_LIMIT = 40;
 
 export const chatWithAI = asyncHandler(async (req, res) => {
+  
   const { aiCharacterId, message, fileData, fileName, fileType } = req.body;
 
   if (!aiCharacterId || (!message?.trim() && !fileData)) {
@@ -65,7 +64,7 @@ export const chatWithAI = asyncHandler(async (req, res) => {
     });
   }
 
- const rawHistory = await AIMessage.find({
+  const rawHistory = await AIMessage.find({
     user: req.user._id,
     character: aiCharacterId,
   })
@@ -73,16 +72,14 @@ export const chatWithAI = asyncHandler(async (req, res) => {
     .limit(HISTORY_LIMIT)
     .lean();
 
-  // Fir unko seedha (reverse) kar do taaki chat flow sahi rahe
   const history = rawHistory.reverse();
-  
+
   let dbMessageContent = message || "";
   let geminiMessageContent = message || "";
   let finalFileUrl = null;
 
   if (fileData) {
     if (fileType && (fileType.startsWith("image/") || fileType === "application/pdf")) {
-      // It's a media file (Base64)
       const base64Data = fileData.replace(/^data:([A-Za-z-+/]+);base64,/, '');
       const buffer = Buffer.from(base64Data, 'base64');
       const uploadResult = await uploadOnCloudinary(buffer);
